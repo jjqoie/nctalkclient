@@ -1,0 +1,27 @@
+{
+  "name": "nctalkclient",
+  "version": "1.0.0",
+  "description": "Client for nextcloud talk API",
+  "main": "nctalkclient.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jochen Gerster <jjqoie@gmx.de> (https://github.com/jjqoie)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jjqoie/nctalkclient.git"
+  },
+  "keywords": [
+    "nextcloud",
+    "talk",
+    "spreed",
+    "client",
+    "http",
+    "https"
+  ],
+  "bugs": {
+    "url": "https://github.com/jjqoie/nctalkclient/issues"
+  },
+  "homepage": "https://github.com/jjqoie/nctalkclient#readme"
+}
