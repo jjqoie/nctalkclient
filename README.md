@@ -1,6 +1,12 @@
 # Node.js Client for nextcloud talk API
 To be used in an iobroker adapter
 
+[![NPM version](https://img.shields.io/npm/v/nctalkclient.svg)](https://www.npmjs.com/package/nctalkclient)
+[![Downloads](https://img.shields.io/npm/dm/nctalkclient.svg)](https://www.npmjs.com/package/nctalkclient)
+
+[![NPM](https://nodei.co/npm/nctalkclient.png?downloads=true)](https://nodei.co/npm/nctalkclient/)
+
+
 ## Install
 
 ```bash
