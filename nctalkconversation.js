@@ -45,14 +45,11 @@ class TalkConversation {
         this.nchttp.RequestfromHost("POST", this._geturl("SendMessage"), message, (retcode, res) => {
             switch (retcode) {
                 case "OK":
-                    //console.log("SendMessage OK", res);
                     Callback();
                     break;
                 case "ERROR":
-                    //console.log("SendMessage ERROR", res);
                     break;
                 case "TIMEOUT":
-                    //console.log("SendMessage TIMEOUT");
                     break;
             }
         });
@@ -65,7 +62,6 @@ class TalkConversation {
 
     WaitNewMessages(Callback) {
         if ((this.listenactive == true) && (this.waitmsgongoing == false)) {
-            console.log("WaitNewMessages");
             this.waitmsgongoing = true;  // Only one WaitNewMessages per conversation
             this.nchttp.RequestfromHost("GET", this._geturl("WaitNewMessages"), null, (retcode, res) => {
 
@@ -74,37 +70,33 @@ class TalkConversation {
 
                 switch (retcode) {
                     case "OK":
-                        //console.log("OK", res);
-
-                        let timeout = undefined;
                         let messages = undefined;
 
                         if (res.headers["x-chat-last-given"] == undefined) {
                             // x-chat-last-given is undefined in nextcloud talk timeout message
                             // https://nextcloud-talk.readthedocs.io/en/latest/chat/#receive-chat-messages-of-a-conversation
-                            console.log("WaitNewMessages - Talk timeout reply");
+                            Callback("NOMSG", "WaitNewMessages - Talk timeout empty reply after no new message was received");
+                            break;
                         }
                         else {
-                            timeout = 0;
                             try {
                                 messages = JSON.parse(res.body).ocs.data;
                                 this.lastmsgid = res.headers["x-chat-last-given"];
                             }
                             catch {
-                                console.log("WARNING: WaitNewMessage received isn't in JSON format");
+                                Callback("ERROR", `ERROR reply string is not a JSON ${res.body}`);
+                                break;
                             }
                         }
 
                         Callback("OK", messages);
                         break;
                     case "ERROR":
-                        //console.log("ERROR", res);
                         Callback("ERROR", res);
                         break;
                     case "TIMEOUT":
                         // This is a http connection timeout which indicates server went offline or is no more reachable while waiting
                         // Make the http connection timeout larger than the nextcloud talk wait new msg timeout (30 by default, 60 at most)
-                        //console.log("TIMEOUT");
                         Callback("TIMEOUT");
                         break;
                 }

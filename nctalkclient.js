@@ -23,16 +23,16 @@ const TalkConversation = require("./nctalkconversation");
 
 
 // capabilities.get(() => {
-//     console.log("get capabilities done");
+//     this.DebugLog("get capabilities done");
 //     const roomlist = new TalkRooms(nchttp, capabilities);
 //     roomlist.get(() => {
-//         console.log("get roomlist done");
+//         this.DebugLog("get roomlist done");
 //         const conversation = new TalkConversation(nchttp, capabilities, roomlist.roomlist[2]);
 //         conversation.SendMessage("DIES IST EIN TEST", () => {
-//             console.log("SendMessage done")
+//             this.DebugLog("SendMessage done")
 //             conversation.SetListenMode(true);
 //             conversation.WaitNewMessages((messages) => {
-//                 console.log(messages);
+//                 this.DebugLog(messages);
 //             });
 //         });
 //     });
@@ -63,6 +63,8 @@ class Talkclient extends EventEmitter {
     this.user = options.user;
     this.pass = options.pass;
     this.port = options.port;
+
+    this.debug = options.debug;
 
     this.nchttp = new TalkAccess(https, {
       server: options.server,
@@ -96,8 +98,18 @@ class Talkclient extends EventEmitter {
 
     if (conversation) {
       conversation.SendMessage(msg, () => {
-        console.log("SendMessage done");
+        this.DebugLog("SendMessage done");
       })
+    }
+  }
+
+  ErrorLog(msg) {
+    this.emit("Error", msg);
+  }
+
+  DebugLog(msg) {
+    if (this.debug == true) {
+      this.emit("Debug", msg);
     }
   }
 
@@ -149,7 +161,7 @@ class Talkclient extends EventEmitter {
 
   // Statemachine eventloop
   _Eventloop(event) {
-    console.log(event);
+    this.DebugLog(event);
 
     // QUESTION: In case of an error do the complete sequence ? in the unlikely case nextcloud was updated and API version changed ?
     // QUESTION: Check in the background for new rooms and automaticlly add and join them?
@@ -159,16 +171,14 @@ class Talkclient extends EventEmitter {
       case 'INIT':
         // First get capabilities - needed to get supported API version and build proper urls
 
-        console.log("Get capabilities");
+        this.DebugLog("Get capabilities");
 
         this.state = 'WAIT';
 
         this.capabilities = new TalkCapabilities(this.nchttp);
         this.capabilities.get((retcode, res) => {
+          this.DebugLog(res.body);
           if (retcode == "OK") {
-            //console.log(this.capabilities.GetConversationAPIVersion());
-            //console.log(this.capabilities.CheckFeature("conversation-v"));
-            //console.log(this.capabilities.CheckFeature("chat-v"));
             this.state = 'CAPABILITIES_DONE';
           }
           else {
@@ -182,7 +192,7 @@ class Talkclient extends EventEmitter {
       case 'CAPABILITIES_DONE':
         // Once Capabilites are done - let's get the rooms/conversations of the user
 
-        console.log("Get Rooms");
+        this.DebugLog("Get Rooms");
 
         this.state = 'WAIT';
 
@@ -196,6 +206,9 @@ class Talkclient extends EventEmitter {
 
         this.rooms = new TalkRooms(this.nchttp, this.capabilities);
         this.rooms.fetch((retcode, res) => {
+
+          this.DebugLog(res.body);
+
           if (retcode == "OK") {
             this.conversation = [];
 
@@ -219,21 +232,29 @@ class Talkclient extends EventEmitter {
       case 'WAIT_CHAT_MSG':
         for (const idx_c in this.conversation) {
           this.conversation[idx_c].WaitNewMessages((retcode, res) => {
+
             if (retcode == "OK") {
               if (res !== undefined) {
                 // New message arrived
+                this.DebugLog(res);
                 this.emit("Message_" + this.conversation[idx_c].roominfo.token, res);
+              } else {
+                this.ErrorLog("WaitNewMessages OK but res is undefined!");
               }
               // else - no new message within the usual nextcloud talk timeout periode - do nothing and call WaitNewMessages again
               this._EventloopTrigger("WaitNewMessages done");
             }
-            else {
+            else if (retcode == "NOMSG") {
+              this.DebugLog(res);
+              this._EventloopTrigger("WaitNewMessages done");
+            } else {
               // Don't get in ERROR state report it and retry until connection is back or aborted
               // Typically two types of error - server is not reachable
               // or nextcloud talk didn't send any heartbeat usually every 30sec
               // this.state = 'ERROR';
               // this.state_info = { retcode: retcode, res: res };
 
+              this.ErrorLog(res);
               this.emit("Error", res);
               this._EventloopTrigger("WaitNewMessages Error", 5000);
             }
@@ -247,7 +268,7 @@ class Talkclient extends EventEmitter {
 
       case 'WAIT':
         // WAIT Do nothing
-        console.log("WAIT");
+        this.DebugLog("WAIT");
         break;
       case 'ERROR':
         // Report Error then do nothing

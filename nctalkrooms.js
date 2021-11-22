@@ -31,11 +31,11 @@ class TalkRooms {
                     }
                     catch (e) {
                         this.roomlist = undefined;
-                        console.log("ERROR reply string is not a JSON");
+                        Callback("ERROR", `ERROR reply string is not a JSON ${res.body}`);
                         break;
                     }
                     //console.log("TalkRooms get OK", this.roomlist);
-                    Callback("OK");
+                    Callback("OK", res);
                     break;
                 case "ERROR":
                     //console.log("TalkRooms get ERROR", res);

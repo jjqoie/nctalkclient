@@ -22,7 +22,7 @@ class TalkCapabilities {
                     }
                     catch (e) {
                         this.capabilities = undefined;
-                        console.log("ERROR reply string is not a JSON");
+                        Callback("ERROR", `Capabilities reply string is not a JSON ${res.body}`);
                         break;
                     }
                     this.spreedfeatures = this.capabilities.ocs.data.capabilities.spreed.features;
@@ -34,16 +34,12 @@ class TalkCapabilities {
                         this.conversationAPIversion = 2;
                     }
 
-                    //console.log("OK", this.spreedfeatures);
-                    Callback("OK");
+                    Callback("OK", res);
                     break;
                 case "ERROR":
-                    // Callback("ERROR", e);
-                    //console.log("ERROR", res);
-                    Callback();
+                    Callback("ERROR", res);
                     break;
                 case "TIMEOUT":
-                    //console.log("TIMEOUT");
                     Callback("TIMEOUT");
                     break;
             }
