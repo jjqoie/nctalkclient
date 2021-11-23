@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const EventEmitter = require("events");
 const https = require("https");
 // const http = require("http");
 
@@ -52,237 +52,237 @@ New 1to1/group conversation will automatically be joined (ListenModeActive=true)
 */
 class Talkclient extends EventEmitter {
 
-  constructor(options) {
-    super();
-    this.state = 'INIT';
-    this.state_info = undefined;
-    this.on("Eventloop", this._Eventloop);
+    constructor(options) {
+        super();
+        this.state = "INIT";
+        this.state_info = undefined;
+        this.on("Eventloop", this._Eventloop);
 
-    // Todo: Add check for options
-    this.server = options.server;
-    this.user = options.user;
-    this.pass = options.pass;
-    this.port = options.port;
+        // Todo: Add check for options
+        this.server = options.server;
+        this.user = options.user;
+        this.pass = options.pass;
+        this.port = options.port;
 
-    this.debug = options.debug;
+        this.debug = options.debug;
 
-    this.nchttp = new TalkAccess(https, {
-      server: options.server,
-      user: options.user,
-      pass: options.pass,
-      port: options.port
-    });
+        this.nchttp = new TalkAccess(https, {
+            server: options.server,
+            user: options.user,
+            pass: options.pass,
+            port: options.port
+        });
 
-  }
+    }
 
-  start(delay) {
+    start(delay) {
     //this.emit("Eventloop","START");
-    this._EventloopTrigger("START", delay);
-  }
+        this._EventloopTrigger("START LOCAL", delay);
+    }
 
-  GetOwnActorIdLowerCase() {
+    GetOwnActorIdLowerCase() {
     // actorId = user name - haven't found anything about this in the nextcloud spreed (talk) documenation
-    return this.user.toLowerCase();
-  }
-
-  RoomListenMode(token, active) {
-    let conversation = this._GetConversionfromToken(token);
-
-    if (conversation)
-      conversation.SetListenMode(active);
-
-  }
-
-  SendMessage(token, msg) {
-    let conversation = this._GetConversionfromToken(token);
-
-    if (conversation) {
-      conversation.SendMessage(msg, () => {
-        this.DebugLog("SendMessage done");
-      })
+        return this.user.toLowerCase();
     }
-  }
 
-  ErrorLog(msg) {
-    this.emit("Error", msg);
-  }
+    RoomListenMode(token, active) {
+        const conversation = this._GetConversionfromToken(token);
 
-  DebugLog(msg) {
-    if (this.debug == true) {
-      this.emit("Debug", msg);
+        if (conversation)
+            conversation.SetListenMode(active);
+
     }
-  }
 
-  /* @param {string} text - Text to send
+    SendMessage(token, msg) {
+        const conversation = this._GetConversionfromToken(token);
+
+        if (conversation) {
+            conversation.SendMessage(msg, () => {
+                this.DebugLog("SendMessage done");
+            });
+        }
+    }
+
+    ErrorLog(msg) {
+        this.emit("Error", msg);
+    }
+
+    DebugLog(msg) {
+        if (this.debug == true) {
+            this.emit("Debug", msg);
+        }
+    }
+
+    /* @param {string} text - Text to send
   * @param {boolean|int} [asReply] - Defaults to true. Sends Text as Reply (with quote)
   *                                  If int: Sends only if X new messages in between
   * @returns {fetch}
   */
-  // message.reply = (text, asReply) => {
-  //    if (message.isReplyable && asReply !== false) {
-  //        if (Number.isSafeInteger(asReply)) {
-  //            const diff = channel.lastKnownMessageId - message.id;
-  //            return this.sendText(text, message.token, diff >= asReply ? message.id : 0);
-  //        } else {
-  //            return this.sendText(text, message.token, message.id);
-  //        }
-  //    }
+    // message.reply = (text, asReply) => {
+    //    if (message.isReplyable && asReply !== false) {
+    //        if (Number.isSafeInteger(asReply)) {
+    //            const diff = channel.lastKnownMessageId - message.id;
+    //            return this.sendText(text, message.token, diff >= asReply ? message.id : 0);
+    //        } else {
+    //            return this.sendText(text, message.token, message.id);
+    //        }
+    //    }
 
-  _GetConversionfromToken(token) {
-    for (const idx_c in this.conversation) {
-      if (this.conversation[idx_c].roominfo.token == token)
-        return this.conversation[idx_c];
+    _GetConversionfromToken(token) {
+        for (const idx_c in this.conversation) {
+            if (this.conversation[idx_c].roominfo.token == token)
+                return this.conversation[idx_c];
+        }
+        return undefined;
     }
-    return undefined;
-  }
 
-  _CreateConversation() {
+    _CreateConversation() {
     // for each element in listofrooms create Conversation Obj
     // An option would be to move this to the rooms instance
     // but as the plan is to create talk independet group instances with flexible 1to1 and 1tomany communication
-    // idea here is that 
+    // idea here is that
     // we will see how to best handle this here
-    let listofrooms = this.rooms.getlistofrooms();
-    for (const key in listofrooms) {
-      this.conversation[key] = new TalkConversation(this.nchttp, this.capabilities, listofrooms[key]);
+        const listofrooms = this.rooms.getlistofrooms();
+        for (const key in listofrooms) {
+            this.conversation[key] = new TalkConversation(this.nchttp, this.capabilities, listofrooms[key]);
+        }
     }
-  }
 
-  _EventloopTrigger(event, timeout) {
+    _EventloopTrigger(event, timeout) {
 
-    if (timeout) {
-      setTimeout((function (event) {
-        this.emit("Eventloop", event);
-      }).bind(this), timeout, event);
-    } else {
-      this.emit("Eventloop", event);
+        if (timeout) {
+            setTimeout((function (event) {
+                this.emit("Eventloop", event);
+            }).bind(this), timeout, event);
+        } else {
+            this.emit("Eventloop", event);
+        }
     }
-  }
 
-  // Statemachine eventloop
-  _Eventloop(event) {
-    this.DebugLog(event);
+    // Statemachine eventloop
+    _Eventloop(event) {
+        this.DebugLog(event);
 
-    // QUESTION: In case of an error do the complete sequence ? in the unlikely case nextcloud was updated and API version changed ?
-    // QUESTION: Check in the background for new rooms and automaticlly add and join them?
+        // QUESTION: In case of an error do the complete sequence ? in the unlikely case nextcloud was updated and API version changed ?
+        // QUESTION: Check in the background for new rooms and automaticlly add and join them?
 
-    // State machine handles startup and receiving new messages of active marked conversations
-    switch (this.state) {
-      case 'INIT':
-        // First get capabilities - needed to get supported API version and build proper urls
+        // State machine handles startup and receiving new messages of active marked conversations
+        switch (this.state) {
+            case "INIT":
+                // First get capabilities - needed to get supported API version and build proper urls
 
-        this.DebugLog("Get capabilities");
+                this.DebugLog("Get capabilities");
 
-        this.state = 'WAIT';
+                this.state = "WAIT";
 
-        this.capabilities = new TalkCapabilities(this.nchttp);
-        this.capabilities.get((retcode, res) => {
-          this.DebugLog(res.body);
-          if (retcode == "OK") {
-            this.state = 'CAPABILITIES_DONE';
-          }
-          else {
-            this.state = 'ERROR';
-            this.state_info = { retcode: retcode, res: res };
-          }
-          this._EventloopTrigger("Get capabilities done");
-        });
+                this.capabilities = new TalkCapabilities(this.nchttp);
+                this.capabilities.get((retcode, res) => {
+                    this.DebugLog(res.body);
+                    if (retcode == "OK") {
+                        this.state = "CAPABILITIES_DONE";
+                    }
+                    else {
+                        this.state = "ERROR";
+                        this.state_info = { retcode: retcode, res: res };
+                    }
+                    this._EventloopTrigger("Get capabilities done");
+                });
 
-        break;
-      case 'CAPABILITIES_DONE':
-        // Once Capabilites are done - let's get the rooms/conversations of the user
+                break;
+            case "CAPABILITIES_DONE":
+                // Once Capabilites are done - let's get the rooms/conversations of the user
 
-        this.DebugLog("Get Rooms");
+                this.DebugLog("Get Rooms");
 
-        this.state = 'WAIT';
+                this.state = "WAIT";
 
-        // check for pre-condition capabilities are available
-        if (this.capabilities === undefined) {
-          this.state = 'ERROR';
-          this.state_info = "Get Rooms - capabilities missing";
-          this._EventloopTrigger("Get rooms done");
-          break;
+                // check for pre-condition capabilities are available
+                if (this.capabilities === undefined) {
+                    this.state = "ERROR";
+                    this.state_info = "Get Rooms - capabilities missing";
+                    this._EventloopTrigger("Get rooms done");
+                    break;
+                }
+
+                this.rooms = new TalkRooms(this.nchttp, this.capabilities);
+                this.rooms.fetch((retcode, res) => {
+
+                    this.DebugLog(res.body);
+
+                    if (retcode == "OK") {
+                        this.conversation = [];
+
+                        // We have the infos about all chat rooms of the smarthome user
+                        // now create conversation instances which handles waitmsg/sendmsg
+                        this._CreateConversation();
+
+                        this.state = "WAIT_CHAT_MSG";
+                        this.emit("Ready", this.rooms.getlistofrooms());
+                    }
+                    else {
+                        this.state = "ERROR";
+                        this.state_info = { retcode: retcode, res: res };
+                    }
+
+                    this._EventloopTrigger("Get rooms done");
+                });
+                break;
+
+
+            case "WAIT_CHAT_MSG":
+                for (const idx_c in this.conversation) {
+                    this.conversation[idx_c].WaitNewMessages((retcode, res) => {
+
+                        if (retcode == "OK") {
+                            if (res !== undefined) {
+                                // New message arrived
+                                this.DebugLog(res);
+                                this.emit("Message_" + this.conversation[idx_c].roominfo.token, res);
+                            } else {
+                                this.ErrorLog("WaitNewMessages OK but res is undefined!");
+                            }
+                            // else - no new message within the usual nextcloud talk timeout periode - do nothing and call WaitNewMessages again
+                            this._EventloopTrigger("WaitNewMessages done");
+                        }
+                        else if (retcode == "NOMSG") {
+                            this.DebugLog(res);
+                            this._EventloopTrigger("WaitNewMessages done");
+                        } else {
+                            // Don't get in ERROR state report it and retry until connection is back or aborted
+                            // Typically two types of error - server is not reachable
+                            // or nextcloud talk didn't send any heartbeat usually every 30sec
+                            // this.state = 'ERROR';
+                            // this.state_info = { retcode: retcode, res: res };
+
+                            this.ErrorLog(res);
+                            this.emit("Error", res);
+                            this._EventloopTrigger("WaitNewMessages Error", 5000);
+                        }
+
+                        // Eventloop trigger within the if and else - due to the diffence in the event delay option
+
+                    });
+
+                }
+                break;
+
+            case "WAIT":
+                // WAIT Do nothing
+                this.DebugLog("WAIT");
+                break;
+            case "ERROR":
+                // Report Error then do nothing
+                this.emit("Error", this.state_info);
+                this.state = "END";
+                break;
+            case "END":
+                // Do nothing
+                break;
+            default:
+                break;
         }
 
-        this.rooms = new TalkRooms(this.nchttp, this.capabilities);
-        this.rooms.fetch((retcode, res) => {
-
-          this.DebugLog(res.body);
-
-          if (retcode == "OK") {
-            this.conversation = [];
-
-            // We have the infos about all chat rooms of the smarthome user
-            // now create conversation instances which handles waitmsg/sendmsg 
-            this._CreateConversation();
-
-            this.state = 'WAIT_CHAT_MSG';
-            this.emit("Ready", this.rooms.getlistofrooms());
-          }
-          else {
-            this.state = 'ERROR';
-            this.state_info = { retcode: retcode, res: res };
-          }
-
-          this._EventloopTrigger("Get rooms done");
-        })
-        break;
-
-
-      case 'WAIT_CHAT_MSG':
-        for (const idx_c in this.conversation) {
-          this.conversation[idx_c].WaitNewMessages((retcode, res) => {
-
-            if (retcode == "OK") {
-              if (res !== undefined) {
-                // New message arrived
-                this.DebugLog(res);
-                this.emit("Message_" + this.conversation[idx_c].roominfo.token, res);
-              } else {
-                this.ErrorLog("WaitNewMessages OK but res is undefined!");
-              }
-              // else - no new message within the usual nextcloud talk timeout periode - do nothing and call WaitNewMessages again
-              this._EventloopTrigger("WaitNewMessages done");
-            }
-            else if (retcode == "NOMSG") {
-              this.DebugLog(res);
-              this._EventloopTrigger("WaitNewMessages done");
-            } else {
-              // Don't get in ERROR state report it and retry until connection is back or aborted
-              // Typically two types of error - server is not reachable
-              // or nextcloud talk didn't send any heartbeat usually every 30sec
-              // this.state = 'ERROR';
-              // this.state_info = { retcode: retcode, res: res };
-
-              this.ErrorLog(res);
-              this.emit("Error", res);
-              this._EventloopTrigger("WaitNewMessages Error", 5000);
-            }
-
-            // Eventloop trigger within the if and else - due to the diffence in the event delay option
-
-          });
-
-        }
-        break;
-
-      case 'WAIT':
-        // WAIT Do nothing
-        this.DebugLog("WAIT");
-        break;
-      case 'ERROR':
-        // Report Error then do nothing
-        this.emit("Error", this.state_info);
-        this.state = 'END';
-        break;
-      case 'END':
-        // Do nothing
-        break;
-      default:
-        break;
     }
-
-  }
 }
 
 module.exports = Talkclient;
