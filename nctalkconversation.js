@@ -4,10 +4,12 @@
 
 class TalkConversation {
 
-    constructor(nchttp, capabilities, roominfo) {
+    constructor(talkclient, nchttp, capabilities, roominfo) {
         this.nchttp = nchttp;
         this.capabilities = capabilities;
         this.roominfo = roominfo;
+
+        this.talkclient = talkclient;
 
         this.lastmsgid = roominfo.lastReadMessage;
         this.listenactive = false;    // We start with active listing off
@@ -63,10 +65,12 @@ class TalkConversation {
     WaitNewMessages(Callback) {
         if ((this.listenactive == true) && (this.waitmsgongoing == false)) {
             this.waitmsgongoing = true;  // Only one WaitNewMessages per conversation
+            this.talkclient.DebugLog("WaitNewMessages IN " + this.roominfo.token);
             this.nchttp.RequestfromHost("GET", this._geturl("WaitNewMessages"), null, (retcode, res) => {
 
                 // WaitNewMessages is done - do this before any callbacks are called in case the trigger a new WaitNewMessage
                 this.waitmsgongoing = false;
+                this.talkclient.DebugLog("WaitNewMessages OUT " + this.roominfo.token);
 
                 switch (retcode) {
                     case "OK":

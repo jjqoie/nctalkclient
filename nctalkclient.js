@@ -144,7 +144,7 @@ class Talkclient extends EventEmitter {
     // we will see how to best handle this here
         const listofrooms = this.rooms.getlistofrooms();
         for (const key in listofrooms) {
-            this.conversation[key] = new TalkConversation(this.nchttp, this.capabilities, listofrooms[key]);
+            this.conversation[key] = new TalkConversation(this, this.nchttp, this.capabilities, listofrooms[key]);
         }
     }
 
