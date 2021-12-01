@@ -69,8 +69,11 @@ class TalkConversation {
             this.nchttp.RequestfromHost("GET", this._geturl("WaitNewMessages"), null, (retcode, res) => {
 
                 // WaitNewMessages is done - do this before any callbacks are called in case the trigger a new WaitNewMessage
+                if(this.waitmsgongoing == false)
+                    console.log("Callback called with waitmsgongoing = false!");
+
+                this.talkclient.DebugLog("WaitNewMessages OUT " + this.roominfo.token + " " + this.waitmsgongoing);
                 this.waitmsgongoing = false;
-                this.talkclient.DebugLog("WaitNewMessages OUT " + this.roominfo.token);
 
                 switch (retcode) {
                     case "OK":
