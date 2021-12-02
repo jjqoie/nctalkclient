@@ -9,7 +9,7 @@ class TalkAccess {
             host: _options.server,
             port: _options.port,
             path: "",
-            timeout: 40000,
+            timeout: 120000,  // Make the http connection timeout larger than the nextcloud talk wait new msg timeout (30 by default, 60 at most)
             method: "",
             // authentication headers
             headers: {
@@ -53,7 +53,9 @@ class TalkAccess {
             Callback("ERROR", e);
         }).bind(this));
         req.on('timeout', (function () {
-            Callback("TIMEOUT");
+            // http timeout - IMPORTANT: socket is still open and can trigger one of the callback aboves!
+            // call abort request --> leading to socket hang up error --> No Callback to calling layer here
+            req.abort();
         }).bind(this));
 
         if (body) {

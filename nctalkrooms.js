@@ -41,10 +41,6 @@ class TalkRooms {
                     //console.log("TalkRooms get ERROR", res);
                     Callback("ERROR", res);
                     break;
-                case "TIMEOUT":
-                    //console.log("TalkRooms get TIMEOUT");
-                    Callback("TIMEOUT");
-                    break;
             }
         });
     }

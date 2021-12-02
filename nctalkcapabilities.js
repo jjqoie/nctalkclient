@@ -39,9 +39,6 @@ class TalkCapabilities {
                 case "ERROR":
                     Callback("ERROR", res);
                     break;
-                case "TIMEOUT":
-                    Callback("TIMEOUT");
-                    break;
             }
 
         });
