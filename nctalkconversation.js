@@ -4,10 +4,12 @@
 
 class TalkConversation {
 
-    constructor(nchttp, capabilities, roominfo) {
+    constructor(talkclient, nchttp, capabilities, roominfo) {
         this.nchttp = nchttp;
         this.capabilities = capabilities;
         this.roominfo = roominfo;
+
+        this.talkclient = talkclient;
 
         this.lastmsgid = roominfo.lastReadMessage;
         this.listenactive = false;    // We start with active listing off
@@ -49,8 +51,6 @@ class TalkConversation {
                     break;
                 case "ERROR":
                     break;
-                case "TIMEOUT":
-                    break;
             }
         });
 
@@ -63,9 +63,22 @@ class TalkConversation {
     WaitNewMessages(Callback) {
         if ((this.listenactive == true) && (this.waitmsgongoing == false)) {
             this.waitmsgongoing = true;  // Only one WaitNewMessages per conversation
+            this.talkclient.DebugLog("WaitNewMessages IN " + this.roominfo.token);
             this.nchttp.RequestfromHost("GET", this._geturl("WaitNewMessages"), null, (retcode, res) => {
 
+                //console.log("DUMP",this.talkclient,this.nchttp);
+                // console.log("totalSocketCount",this.nchttp._http.globalAgent.totalSocketCount);
+                // console.log("Wait Counter ",this.waitcnt,this.roominfo.token,retcode,res);
+
                 // WaitNewMessages is done - do this before any callbacks are called in case the trigger a new WaitNewMessage
+                if(this.waitmsgongoing == false)
+                {
+                    this.talkclient.DebugLog("Callback called with waitmsgongoing = false!", this.roominfo.token, retcode, res);
+                }
+
+                //console.log(this.roominfo.token, this.nchttp._http.globalAgent.sockets);
+                //console.log(this.roominfo.token, this.nchttp);
+                this.talkclient.DebugLog("WaitNewMessages OUT " + this.roominfo.token + " " + this.waitmsgongoing);
                 this.waitmsgongoing = false;
 
                 switch (retcode) {
@@ -93,11 +106,6 @@ class TalkConversation {
                         break;
                     case "ERROR":
                         Callback("ERROR", res);
-                        break;
-                    case "TIMEOUT":
-                        // This is a http connection timeout which indicates server went offline or is no more reachable while waiting
-                        // Make the http connection timeout larger than the nextcloud talk wait new msg timeout (30 by default, 60 at most)
-                        Callback("TIMEOUT");
                         break;
                 }
             });

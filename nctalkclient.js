@@ -104,10 +104,12 @@ class Talkclient extends EventEmitter {
     }
 
     ErrorLog(msg) {
+        //global.ErrorLog(msg);
         this.emit("Error", msg);
     }
 
     DebugLog(msg) {
+        //global.DebugLog(msg);
         if (this.debug == true) {
             this.emit("Debug", msg);
         }
@@ -144,7 +146,7 @@ class Talkclient extends EventEmitter {
     // we will see how to best handle this here
         const listofrooms = this.rooms.getlistofrooms();
         for (const key in listofrooms) {
-            this.conversation[key] = new TalkConversation(this.nchttp, this.capabilities, listofrooms[key]);
+            this.conversation[key] = new TalkConversation(this, this.nchttp, this.capabilities, listofrooms[key]);
         }
     }
 
@@ -246,7 +248,7 @@ class Talkclient extends EventEmitter {
                         }
                         else if (retcode == "NOMSG") {
                             this.DebugLog(res);
-                            this._EventloopTrigger("WaitNewMessages done");
+                            this._EventloopTrigger("WaitNewMessages done", 1000);
                         } else {
                             // Don't get in ERROR state report it and retry until connection is back or aborted
                             // Typically two types of error - server is not reachable
