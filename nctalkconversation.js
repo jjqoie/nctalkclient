@@ -66,47 +66,52 @@ class TalkConversation {
             this.talkclient.DebugLog("WaitNewMessages IN " + this.roominfo.token);
             this.nchttp.RequestfromHost("GET", this._geturl("WaitNewMessages"), null, (retcode, res) => {
 
-                //console.log("DUMP",this.talkclient,this.nchttp);
-                // console.log("totalSocketCount",this.nchttp._http.globalAgent.totalSocketCount);
-                // console.log("Wait Counter ",this.waitcnt,this.roominfo.token,retcode,res);
-
-                // WaitNewMessages is done - do this before any callbacks are called in case the trigger a new WaitNewMessage
-                if(this.waitmsgongoing == false)
-                {
-                    this.talkclient.DebugLog("Callback called with waitmsgongoing = false!", this.roominfo.token, retcode, res);
+                if (this.waitmsgongoing == false) {
+                    this.talkclient.ErrorLog("Callback called with waitmsgongoing = false!", this.roominfo.token, retcode, res);
+                    Callback("STOP", res);
                 }
+                else {
+                    this.talkclient.DebugLog("WaitNewMessages OUT " + this.roominfo.token + " " + this.waitmsgongoing);
 
-                //console.log(this.roominfo.token, this.nchttp._http.globalAgent.sockets);
-                //console.log(this.roominfo.token, this.nchttp);
-                this.talkclient.DebugLog("WaitNewMessages OUT " + this.roominfo.token + " " + this.waitmsgongoing);
-                this.waitmsgongoing = false;
+                    // WaitNewMessages is done - do this before any callbacks are called in case the trigger a new WaitNewMessage
+                    this.waitmsgongoing = false;
 
-                switch (retcode) {
-                    case "OK":
-                        let messages = undefined;
+                    // https://nextcloud-talk.readthedocs.io/en/latest/chat/#receive-chat-messages-of-a-conversation
+                    switch (retcode) {
+                        case "OK":
+                            let messages = undefined;
 
-                        if (res.headers["x-chat-last-given"] == undefined) {
-                            // x-chat-last-given is undefined in nextcloud talk timeout message
-                            // https://nextcloud-talk.readthedocs.io/en/latest/chat/#receive-chat-messages-of-a-conversation
-                            Callback("NOMSG", "WaitNewMessages - Talk timeout empty reply after no new message was received");
+                            this.talkclient.DebugLog(res);
+
+                            if (res.statusCode == 200) {
+                                // 200 OK
+                                try {
+                                    messages = JSON.parse(res.body).ocs.data;
+                                    this.lastmsgid = res.headers["x-chat-last-given"];
+                                    Callback("OK", messages);
+                                }
+                                catch {
+                                    Callback("ERROR", `ERROR reply string is not a JSON ${res.body}`);
+                                }
+                            } else if (res.statusCode == 304) {
+                                // 304 Not Modified When there were no older/newer messages
+                                Callback("NOMSG", "WaitNewMessages - Talk timeout empty reply after no new message was received");
+                            } else if (res.statusCode == 404) {
+                                // 404 Not Found When the conversation could not be found for the participant
+                                Callback("ERROR", "Error http statusCode - 404 Not Found When the conversation could not be found for the participant");
+                            }
+                            else if (res.statusCode == 412) {
+                                // 412 Precondition Failed When the lobby is active and the user is not a moderator
+                                Callback("ERROR", "Error http statusCode - 412 Precondition Failed When the lobby is active and the user is not a moderator");
+                            }
+                            else {
+                                Callback("ERROR", `Error unknown http statusCode - ${res.statusCode}`);
+                            }
                             break;
-                        }
-                        else {
-                            try {
-                                messages = JSON.parse(res.body).ocs.data;
-                                this.lastmsgid = res.headers["x-chat-last-given"];
-                            }
-                            catch {
-                                Callback("ERROR", `ERROR reply string is not a JSON ${res.body}`);
-                                break;
-                            }
-                        }
-
-                        Callback("OK", messages);
-                        break;
-                    case "ERROR":
-                        Callback("ERROR", res);
-                        break;
+                        case "ERROR":
+                            Callback("ERROR", res);
+                            break;
+                    }
                 }
             });
         }

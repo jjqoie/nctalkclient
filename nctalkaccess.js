@@ -41,6 +41,7 @@ class TalkAccess {
 
             res.on("end", (function () {
                 let data = {
+                    statusCode: res.statusCode,
                     headers: res.headers,
                     body: body
                 };

@@ -7,6 +7,8 @@ const TalkCapabilities = require("./nctalkcapabilities");
 const TalkRooms = require("./nctalkrooms");
 const TalkConversation = require("./nctalkconversation");
 
+const packageDetails = require('./package.json');
+
 
 // Test Code
 
@@ -77,7 +79,7 @@ class Talkclient extends EventEmitter {
 
     start(delay) {
     //this.emit("Eventloop","START");
-        this._EventloopTrigger("START LOCAL", delay);
+        this._EventloopTrigger(`START nctalkclient ${packageDetails.version}`, delay);
     }
 
     GetOwnActorIdLowerCase() {
@@ -240,29 +242,30 @@ class Talkclient extends EventEmitter {
                                 // New message arrived
                                 this.DebugLog(res);
                                 this.emit("Message_" + this.conversation[idx_c].roominfo.token, res);
+                                this._EventloopTrigger("WaitNewMessages done");
+
                             } else {
                                 this.ErrorLog("WaitNewMessages OK but res is undefined!");
+                                this.state = "ERROR";
+                                this.state_info = { retcode: retcode, res: res };
+                                this._EventloopTrigger("WaitNewMessages unkown Error");
                             }
-                            // else - no new message within the usual nextcloud talk timeout periode - do nothing and call WaitNewMessages again
-                            this._EventloopTrigger("WaitNewMessages done");
                         }
                         else if (retcode == "NOMSG") {
                             this.DebugLog(res);
-                            this._EventloopTrigger("WaitNewMessages done", 1000);
-                        } else {
+                            this._EventloopTrigger("WaitNewMessages done");
+                        } else if (retcode == "ERROR") {
                             // Don't get in ERROR state report it and retry until connection is back or aborted
                             // Typically two types of error - server is not reachable
                             // or nextcloud talk didn't send any heartbeat usually every 30sec
-                            // this.state = 'ERROR';
-                            // this.state_info = { retcode: retcode, res: res };
-
                             this.ErrorLog(res);
                             this.emit("Error", res);
-                            this._EventloopTrigger("WaitNewMessages Error", 5000);
+                            this._EventloopTrigger("WaitNewMessages Error", 30000);
+                        } else {
+                            this.state = "ERROR";
+                            this.state_info = { retcode: retcode, res: res };
+                            this._EventloopTrigger("WaitNewMessages unknown Error");
                         }
-
-                        // Eventloop trigger within the if and else - due to the diffence in the event delay option
-
                     });
 
                 }
