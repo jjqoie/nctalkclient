@@ -7,6 +7,8 @@ const TalkCapabilities = require("./nctalkcapabilities");
 const TalkRooms = require("./nctalkrooms");
 const TalkConversation = require("./nctalkconversation");
 
+const packageDetails = require('./package.json');
+
 
 // Test Code
 
@@ -77,7 +79,7 @@ class Talkclient extends EventEmitter {
 
     start(delay) {
     //this.emit("Eventloop","START");
-        this._EventloopTrigger("START LOCAL", delay);
+        this._EventloopTrigger(`START nctalkclient ${packageDetails.version}`, delay);
     }
 
     GetOwnActorIdLowerCase() {
