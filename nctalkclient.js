@@ -1,6 +1,6 @@
 const EventEmitter = require("events");
 const https = require("https");
-// const http = require("http");
+const http = require("http");
 
 const TalkAccess = require("./nctalkaccess");
 const TalkCapabilities = require("./nctalkcapabilities");
@@ -68,13 +68,21 @@ class Talkclient extends EventEmitter {
 
         this.debug = options.debug;
 
-        this.nchttp = new TalkAccess(https, {
-            server: options.server,
-            user: options.user,
-            pass: options.pass,
-            port: options.port
-        });
-
+        if(this.port == 80) {
+            this.nchttp = new TalkAccess(http, {
+                server: options.server,
+                user: options.user,
+                pass: options.pass,
+                port: options.port
+            });
+        } else {
+            this.nchttp = new TalkAccess(https, {
+                server: options.server,
+                user: options.user,
+                pass: options.pass,
+                port: options.port
+            });
+        }
     }
 
     start(delay) {
@@ -101,6 +109,16 @@ class Talkclient extends EventEmitter {
         if (conversation) {
             conversation.SendMessage(msg, () => {
                 this.DebugLog("SendMessage done");
+            });
+        }
+    }
+
+    ShareFile(token, filename) {
+        const conversation = this._GetConversionfromToken(token);
+
+        if (conversation) {
+            conversation.ShareFile(filename, () => {
+                this.DebugLog("ShareFile done");
             });
         }
     }
