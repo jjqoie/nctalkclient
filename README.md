@@ -25,13 +25,16 @@ const http = require("http");
 
 const NextcloudTalk = require("nctalkclient");
 
+// Use for test purposes - test server with self signed certs...
+//process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
 
 const Talk = new NextcloudTalk({
   server: private.talkcredentials.server,
   user: private.talkcredentials.user,
   pass: private.talkcredentials.pass,
-  port: private.talkcredentials.port
+  port: private.talkcredentials.port,
+  debug: true
 });
 
 
@@ -49,27 +52,36 @@ Talk.on("Ready", (listofrooms) => {
   Talk.RoomListenMode(listofrooms[testroom_index].token, true);
   Talk.SendMessage(listofrooms[testroom_index].token, "OnReady Test Nachricht");
 
-  // Only receives Messages from the conversation with token
-  Talk.on("Message_" + listofrooms[testroom_index].token, (msg) => {
-    // msg is an array, usually with the length one, in the test we just take the first...
-    if (msg[0].actorId.toLowerCase() == Talk.GetOwnActorIdLowerCase()) {
-      console.log("OWN MESSAGEEVENT " + msg[0].message);
-    }
-    else {
-      console.log("MESSAGEEVENT " + msg[0].message);
-      if (msg[0].message == "time") {
-        Talk.SendMessage(msg[0].token, new Date().toLocaleString());
+    // Only receives Messages from the conversation with token
+    Talk.on("Message_" + listofrooms[testroom_index].token, (msg) => {
+      // msg is an array, usually with the length one, in the test we just take the first...
+      if (msg[0].actorId.toLowerCase() == Talk.GetOwnActorIdLowerCase()) {
+        console.log("OWN MESSAGEEVENT " + msg[0].message);
       }
-      if (msg[0].message == "test") {
-        Talk.SendMessage(msg[0].token, "test reply");
+      else {
+        console.log("MESSAGEEVENT " + msg[0].message);
+        if (msg[0].message == "time") {
+          Talk.SendMessage(msg[0].token, new Date().toLocaleString());
+        }
+        if (msg[0].message == "test") {
+          Talk.SendMessage(msg[0].token, "test reply");
+        }
       }
-    }
-  });
+    });
+
+  Talk.ShareFile(listofrooms[2].token, "/talk/test123.jpg");
+
+
 });
 
 // Error
 Talk.on("Error", (e) => {
-  console.log("Error Event " + e);
+  console.log("Error Event ", e);
+});
+
+// Debug
+Talk.on("Debug", (e) => {
+  console.log("Debug Event ", e);
 });
 
 ```

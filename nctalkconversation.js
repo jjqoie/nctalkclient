@@ -30,13 +30,16 @@ class TalkConversation {
 
     }
 
-    _geturl(func) {
+    _geturl(func, param1) {
         switch (func) {
             case "SendMessage":
                 return `/ocs/v2.php/apps/spreed/api/v1/chat/${this.roominfo.token}?format=json`;
             case "WaitNewMessages":
                 // https://nextcloud-talk.readthedocs.io/en/latest/chat/ - chat version chat-v2 doesn't impact url it added support for rich object strings
                 return `/ocs/v2.php/apps/spreed/api/v1/chat/${this.roominfo.token}?lookIntoFuture=1&setReadMarker=1&format=json&lastKnownMessageId=${this.lastmsgid}`;
+            case "ShareFile":
+                return `/ocs/v2.php/apps/files_sharing/api/v1/shares?shareType=10&shareWith=${this.roominfo.token}&path=${param1}`;
+
 
         }
     }
@@ -54,6 +57,18 @@ class TalkConversation {
             }
         });
 
+    }
+
+    ShareFile(filename, Callback) {
+        this.nchttp.RequestfromHost("POST", this._geturl("ShareFile", filename), null, (retcode, res) => {
+            switch (retcode) {
+                case "OK":
+                    Callback();
+                    break;
+                case "ERROR":
+                    break;
+            }
+        });
     }
 
     SetListenMode(active) {
