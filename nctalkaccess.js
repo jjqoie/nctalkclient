@@ -4,9 +4,10 @@
 class TalkAccess {
 
     constructor(_http, _options) {
+        this.server_url = this.server_split_string(_options.server);
         this._http = _http;
         this.httpoptions = {
-            host: _options.server,
+            host: this.server_url.host,
             port: _options.port,
             path: "",
             timeout: 120000,  // Make the http connection timeout larger than the nextcloud talk wait new msg timeout (30 by default, 60 at most)
@@ -21,10 +22,35 @@ class TalkAccess {
         };
     }
 
+    server_split_string(url) {
+
+        if(typeof url !== "string") {
+            return {};
+        }
+
+        const server_split = url.split("/");
+
+        let host;
+        let path = String();
+
+        server_split.forEach((element, index) => {
+            if(index == 0) {
+                host = element;
+            }
+            else {
+                if(element != "") {
+                    path = path + "/" + element;
+                }
+            }
+        });
+
+        return {host, path};
+    }
+
     RequestfromHost(method, path, body, Callback) {
 
         this.httpoptions.method = method;
-        this.httpoptions.path = path;
+        this.httpoptions.path = this.server_url.path + path;
 
         //console.log(this.httpoptions);
 
