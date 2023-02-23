@@ -13,6 +13,27 @@ To be used in an iobroker adapter
 npm install nctalkclient
 ```
 
+## Changelog
+
+### 1.5.0 (2023-02-23)
+* (Jochen Gerster) Added vhost support
+
+### 1.4.0 (2021-01-07)
+* (Jochen Gerster) Added support for filesharing in messages
+
+### 1.3.0 (2021-12-04)
+* (Jochen Gerster) Bugfix nextcloud talk http status code is evaluated to handle error cases with http request status OK, for example http status code 502
+
+
+### 1.2.0 (2021-12-02)
+* (Jochen Gerster) Fixing eslint findings
+* (Jochen Gerster) Added debug logging to the nctalkconversation
+* (Jochen Gerster) Bugfix for spurious and wrong WaitMessage request Callback calls
+
+### 1.1.0 (2021-11-22)
+* (Jochen Gerster) First release
+
+
 ## Test / How to use
 Idea is to create a smarthome / bot user in your nextcloud instance and administrate there the different rooms.
 All type of rooms will be shown in the listofrooms of the onReady event.
