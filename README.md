@@ -15,6 +15,9 @@ npm install nctalkclient
 
 ## Changelog
 
+### 1.6.0 (2023-02-23)
+* (Jochen Gerster) Added GetVersion function
+
 ### 1.5.0 (2023-02-23)
 * (Jochen Gerster) Added vhost support
 
