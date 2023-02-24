@@ -85,6 +85,10 @@ class Talkclient extends EventEmitter {
         }
     }
 
+    GetVersion() {
+        return packageDetails.version;
+    }
+
     start(delay) {
     //this.emit("Eventloop","START");
         this._EventloopTrigger(`START nctalkclient ${packageDetails.version}`, delay);
